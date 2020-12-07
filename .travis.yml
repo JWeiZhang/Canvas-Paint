@@ -9,7 +9,6 @@ script: yarn build
 deploy:
   provider: pages
   skip_cleanup: true
-  github_token: 184126a1621be59b1d5d88e9abb2b1086692de15
   local_dir: dist
   on:
     branch: master
