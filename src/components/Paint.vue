@@ -10,6 +10,12 @@
       <span class="icon" @click="download">
         <font-awesome-icon icon="download" size="lg" />
       </span>
+      <span :class="['icon', { 'is-disable': nowStep < 0 }]" @click="shiftStep(-1)">
+        <font-awesome-icon icon="undo" size="lg" />
+      </span>
+      <span :class="['icon', { 'is-disable': nowStep === steps.length - 1 }]" @click="shiftStep(1)">
+        <font-awesome-icon icon="redo" size="lg" />
+      </span>
       <input type="range" min="1" max="50" value="16" v-model="lineWidth" />
       <input type="color" v-model="color" />
     </div>
@@ -29,6 +35,8 @@ export default class BeautyRiverReport extends Vue {
   tool = 'pen'
   lineWidth = 16
   isDrawing = false
+  steps: Array<string> = []
+  nowStep = -1
   startPoint = {
     x: 0,
     y: 0,
@@ -55,6 +63,17 @@ export default class BeautyRiverReport extends Vue {
     })
     this.canvas.addEventListener('mouseup', () => {
       this.isDrawing = false
+      if (this.nowStep !== this.steps.length - 1) {
+        // TODO: new step while there are redos get error result
+        this.steps.splice(
+          this.nowStep,
+          this.steps.length - 1 - this.nowStep,
+          this.canvas.toDataURL(),
+        )
+      } else {
+        this.steps.push(this.canvas.toDataURL())
+      }
+      this.nowStep = this.steps.length - 1
     })
   }
 
@@ -93,6 +112,16 @@ export default class BeautyRiverReport extends Vue {
     link.download = ''
     link.click()
   }
+
+  shiftStep(step: number) {
+    this.ctx?.clearRect(0, 0, this.canvas.width, this.canvas.height)
+    this.nowStep = this.nowStep + step
+    const image = new Image()
+    image.src = this.steps[this.nowStep]
+    image.onload = () => {
+      this.ctx?.drawImage(image, 0, 0)
+    }
+  }
 }
 </script>
 
@@ -125,6 +154,10 @@ export default class BeautyRiverReport extends Vue {
   &.selected {
     color: #fff;
     background-color: #2c3e50;
+  }
+  &.is-disable {
+    opacity: 0.5;
+    cursor: not-allowed;
   }
 }
 </style>
