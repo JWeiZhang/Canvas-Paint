@@ -7,6 +7,9 @@
       <span :class="['icon', { selected: tool === 'eraser' }]" @click="changeTool('eraser')">
         <font-awesome-icon icon="eraser" size="lg" />
       </span>
+      <span class="icon" @click="download">
+        <font-awesome-icon icon="download" size="lg" />
+      </span>
       <input type="range" min="1" max="50" value="16" v-model="lineWidth" />
       <input type="color" v-model="color" />
     </div>
@@ -43,10 +46,14 @@ export default class BeautyRiverReport extends Vue {
       }
     })
     this.canvas.addEventListener('mousemove', this.draw)
-    this.canvas.addEventListener('mouseup', () => {
-      this.isDrawing = false
+    this.canvas.addEventListener('mouseenter', (e: MouseEvent) => {
+      this.startPoint = {
+        x: e.offsetX,
+        y: e.offsetY,
+      }
+      this.draw
     })
-    this.canvas.addEventListener('mouseout', () => {
+    this.canvas.addEventListener('mouseup', () => {
       this.isDrawing = false
     })
   }
@@ -55,7 +62,7 @@ export default class BeautyRiverReport extends Vue {
     this.tool = tool
   }
 
-  draw(e: any) {
+  draw(e: MouseEvent) {
     if (!this.isDrawing) return
     if (this.ctx) {
       if (this.tool === 'eraser') {
@@ -76,6 +83,15 @@ export default class BeautyRiverReport extends Vue {
       x: e.offsetX,
       y: e.offsetY,
     }
+  }
+
+  download() {
+    const url = this.canvas.toDataURL()
+    const link = document.createElement('a')
+    link.innerText = 'Download'
+    link.href = url
+    link.download = ''
+    link.click()
   }
 }
 </script>
